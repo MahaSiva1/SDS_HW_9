@@ -5,7 +5,8 @@ date: "2025-04-17"
 output: pdf_document
 ---
 
-Github Link: 
+Github Link: https://github.com/MahaSiva1/SDS_HW_9
+
 
 
 ```{r setup, include=FALSE}
@@ -18,40 +19,41 @@ library(effectsize)
 ```
 
 # Question 1 
-```{r}
+```{r, echo=FALSE}
 solder <- read.csv("/Users/mahasivasubramanian/Desktop/SDS315/solder.csv")
 
 
 ```
 
 ### Part A
-Part A: Make two plots. The first plot should provide evidence that the size of the opening on the solder
-gun is related to the number of skips. The second should provide evidence that the thickness of the alloy
-used for soldering is related to the number of skips. Give each plot an informative caption describing what is
-shown in the plot
 
-```{r}
+```{r, echo=FALSE}
 library(ggplot2)
-ggplot(solder) + geom_boxplot(aes(x=skips, fill=Opening))
+ggplot(solder) + geom_boxplot(aes(x=Opening, y=skips)) + labs(x="Opening Size", y="Number of Skips", title="Opening Size vs. Number of Skips") 
 
 ```
+In the figure above, we see a possible correlation between opening size and number of skips. A small opening appears to have more number of skips while a large opening seems to have lower number of skips. 
 
-```{r}
-ggplot(solder) + geom_boxplot(aes(x=skips, fill=Solder))
 
+```{r, echo=FALSE}
+ggplot(solder) + geom_boxplot(aes(x=Solder, y=skips)) + labs(x="Solder", y="Number of Skips", title="Solder vs Number of Skips") 
 ```
+In the figure above we see a possible correlation between the thickness of the alloy and number of skips. A thin solder seems to have greater number of skips than a thick solder.
 
 ### Part B 
 
-```{r}
+```{r, echo=FALSE, include=FALSE}
 model_skip2 = lm(skips ~ Solder + Opening + Solder:Opening, data=solder)
-#boot_skip2 = do(10000) * lm(skips ~ Solder + Opening + Solder:Opening, data=resample(solder))
 confint(model_skip2, level = .95)
-get_regression_table(model_skip2, conf.level = 0.95, digits=2)
-coef(model_skip2)
+
 
 
 ```
+```{r, echo=FALSE}
+get_regression_table(model_skip2, conf.level = 0.95, digits=2)
+
+```
+
 ### Part C 
 
 interpretation 
@@ -63,16 +65,16 @@ interpretation
 * the interaction effect for the thin solder and a small opening is 9.65. In other words, when we have both solder thin and small opening we would have 9.65 greater than what you expect from summing the individual “isolated” effects of the two variables.
 
 ### Part D 
-Smallest number of skips will be gained from solder thin and medium opening. 
+If At&T was looking for the combination of opening size and Solder thickness, I would recommend a large opening size with a thick solder. This is the baseline group for our regression model and its value of 0.393 is the lowest value for number of skips, especially when comparing to all of the interaction effects and adding of all terms. 
 
 # Question 2 
 
-```{r}
+```{r, echo=FALSE}
 groceries <- read.csv("/Users/mahasivasubramanian/Desktop/SDS315/groceries.csv")
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 
 groceries %>%
   group_by(Store) %>%
@@ -82,21 +84,22 @@ groceries %>%
   coord_flip() +
   labs(x = "Store", y = "Average Price", title = "Average Price of Products by Store")
 ```
-Caption 
+This graph displays all of the stores in our data set and the average price of the products in those stores. We see that Whole Foods has the greatest price of product and Fiesta has the lowest average price of Product.  
 
 ### Part B 
-```{r, fig.width=8, fig.height=12}
+```{r, echo=FALSE, fig.width=8, fig.height=12}
 groceries %>%
   group_by(Product) %>%
   summarize(num_stores = n_distinct(Store)) %>%
-  ggplot(aes(x=Product, y=num_stores)) + geom_bar(stat = "identity", fill = "darkseagreen") +
+  ggplot(aes(x=Product, y=num_stores)) + geom_bar(stat = "identity", fill = "darkseagreen") + labs(x="Number of Stores", y="Product", title="Number of Stores vs Product") +
   coord_flip() 
 
 
 
 ```
+
 ### Part C 
-```{r}
+```{r, include=FALSE, echo=FALSE}
 lm_groceries = lm(Price ~ Product + Type, data=groceries)
 confint(lm_groceries, level = 0.95)
 coef(lm_groceries)
@@ -104,10 +107,10 @@ get_regression_table(lm_groceries, conf.level = 0.95, digits=2)
 
 ```
 
-Compared with ordinary grocery stores, convenience stores charge somewhere between .41 and .92 dolarrs more for the smame product. 
+Compared with ordinary grocery stores, convenience stores charge somewhere between .41 and .92 dollars more for the same product. 
 
 ### Part D 
-```{r}
+```{r, echo=FALSE, include=FALSE}
 
 lm_groceries1 = lm(Price ~ Product + Store, data=groceries)
 confint(lm_groceries1, level = 0.95)
@@ -115,7 +118,21 @@ get_regression_table(lm_groceries1, conf.level = 0.95, digits=2)
 
 ```
 
+```{r, echo=FALSE, include=FALSE}
+store_effects <- get_regression_table(lm_groceries1, conf.level = 0.95, digits = 2) %>%
+  filter(grepl("^Store", term)) %>%
+  arrange(estimate)
 
+# Lowest priced stores
+head(store_effects, 2)
+
+# Highest priced stores
+tail(store_effects, 2)
+
+```
+One of the stores with the lowest estimated prices are Walmart with prices that average $.99  less than the baseline store, with a confidence interval of [-$1.45, -$0.53]. Another store with low estimate prices is Kriger Fresh Fare with a estimate of $-.90 and a confidence interval of [-$1.36, -$.44]. 
+
+The stores with the greatest estimated prices are Wheatesville Food Co-op and Whole Foods. Wheatsville has a estimate of .29 with a 95% confidence interval of [-$0.06, $0.64]. Whole foods has a estimate of 0.36 with a 95% confidence interval of [$0.02, $0.71]. 
 
 ### Part E
 
@@ -123,7 +140,7 @@ From the model, it can be seen that H-E-B has a coefficient of -0.65 (95% Cl: [-
 
 
 ### Part F 
-```{r}
+```{r, echo=FALSE, include=FALSE}
 groceries <- groceries %>% 
   mutate(Income10k = round(Income / 10000, 0))
 
@@ -138,31 +155,39 @@ Based on the sign of the Income10k coefficient, consumers in poorer ZIP codes se
 
 
 
-
-
 # Problem 3 
 
 
 ### A - ZIP codes with a higher percentage of minority residents tend to have more FAIR policies per 100 housing units.
 
+### TRUE
+
 This statement is true. According to Figure A, the model has a R-squared value of .5163 which indicates that 51.6% of the variability in product prices can be explained by the model which shows that it is a moderately strong model. In addition, the slope for minority is [.009, .018]. As 0 is not included in the confidence interval, there it is statistically significant.
 
 
-### B. The evidence suggests an interaction effect between minority percentage and the age of the housing stock in the way that these two variables are related to the number of FAIR policies in a ZIP code. - undecidable
+### B. The evidence suggests an interaction effect between minority percentage and the age of the housing stock in the way that these two variables are related to the number of FAIR policies in a ZIP code. 
 
-FALSE
+### UNDECIDABLE
 
-The model does not include an interaction term for age and minority. The model E has a 95% confidence interval for age of [-.002,.013] and since 0 is in the interval- there is it not statistically significant.
+The model does not include an interaction term for age and minority. In order for us to more accurately determine for an interaction, model A would have to include an interaction effect, for example:model_A <- lm(policies ~ minority + age, data = redlining) and then using the slope and the interval, we can determine the validity the interaction effect. 
 
-### C. The relationship between minority percentage and number of FAIR policies per 100 housing units is stronger in high-fire-risk ZIP codes than in low-fire-risk ZIP codes. - Undecidable
+### C. The relationship between minority percentage and number of FAIR policies per 100 housing units is stronger in high-fire-risk ZIP codes than in low-fire-risk ZIP codes. 
 
-###D. Even without controlling for any other variables, income “explains away” all the association between minority percentage and FAIR policy uptake. FALSE 
+### UNDECIDABLE
 
-According to model D, with minority + income, minority remains statistically significant with a p level of .002 so even when income is added minority percentage still has a statistically significant association with FAIR policies. 
+This statement is undecidable. According to figure C1, the slope of both the high fire risk and the low fire risk are very similar and if we look at the model C the interaction effect of minority groups and fire risk low has a confidence interval of [-0.012, 0.01]. Because this interval includes 0 in its interval we can not assume statistical significance. 
 
-### E. Minority percentage and number of FAIR policies are still associated at the ZIP code level, even after controlling for income, fire risk, and housing age. TRUE 
+### D. Even without controlling for any other variables, income “explains away” all the association between minority percentage and FAIR policy uptake. 
 
-In model E, after controlling for all the variables listed above such as income, fire risk, housing age. The coefficient for minority is estimate =.008 and p =.006 which indicates statistically significance. Therefore minority percentage remains a significant perdictor of FAIR policies. 
+### FALSE 
+
+According to model D, with minority + income, the coefficient of the minority is .01 verus in model A, the minority coefficient is .014. Therefore in model D, the income explains some of the association between minority perctange and policy uptake but there is still correlation between minority percentage and policies which is also proven by 95% confidence interval [0.004, 0.015] does not include 0. 
+
+### E. Minority percentage and number of FAIR policies are still associated at the ZIP code level, even after controlling for income, fire risk, and housing age. 
+
+### TRUE 
+
+In model E, after controlling for all the variables listed above such as income, fire risk, housing age. The coefficient for minority is estimate =.008 and p =.006 which indicates statistically significance. Therefore minority percentage remains a significant predictor of FAIR policies. 
 
 
 
